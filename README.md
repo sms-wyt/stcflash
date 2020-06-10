@@ -12,4 +12,4 @@ Add support for STC8 series and STC15 series
 1、按照默认参数<br>
   ./stcflash.py xxx.hex<br>
 2、指定波特率、端口和下载协议<br>
-  ./stcflash.py xxx.hex --port COMx --protocol 89
+  ./stcflash.py xxx.hex --port COM3 --protocol 89
