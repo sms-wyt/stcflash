@@ -6,5 +6,10 @@ Add support for STC8 series and STC15 series
 3、新增对于STC8和STC15系列单片机的基本信息读取显示
 # stcflash基本使用方法
 ## 使用条件
-1、需要python环境，推荐python3，
-2、安装pyserial模块
+1、需要python环境，推荐python3;<br>
+2、安装pyserial模块;<br>
+##使用命令
+1、按照默认参数<br>
+  ./stcflash.py xxx.hex<br>
+2、指定波特率、端口和下载协议<br>
+  ./stcflash.py xxx.hex --port COMx --protocol 89
