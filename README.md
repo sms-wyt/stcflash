@@ -8,7 +8,7 @@ Add support for STC8 series and STC15 series
 ## 使用条件
 1、需要python环境，推荐python3;<br>
 2、安装pyserial模块;<br>
-##使用命令
+## 使用命令
 1、按照默认参数<br>
   ./stcflash.py xxx.hex<br>
 2、指定波特率、端口和下载协议<br>
