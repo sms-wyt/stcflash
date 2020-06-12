@@ -1,5 +1,7 @@
 # stcflash
 Add support for STC8 series and STC15 series
+# 介绍
+stcflash主要是基于https://github.com/laborer/stcflash的stcfalsh修改而来，原版的stcflash只支持一些比较旧系列的STC单片机，我在此基础上，添加了对STC8全系列（STC8A、STC8F、STC8H、STC8C）和STC15系列的下载支持。
 # 新增功能
 1、添加对STC8和STC15系列单片机的下载支持;<br>
 2、对于STC8系列，新增支持波特率4800-460800之间的任意波特率设定;<br>
