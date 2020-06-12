@@ -1,5 +1,5 @@
 # stcflash
-Add support for STC8 series and STC15 series
+Add support for STC8 series(STC8A,STC8F,STC8H,STC8C) and STC15 series
 # 介绍
 stcflash主要是基于（https://github.com/laborer/stcflash） 的stcflash修改而来，原版的stcflash只支持一些比较旧系列的STC单片机，我在此基础上，添加了对STC8全系列（STC8A、STC8F、STC8H、STC8C）和STC15系列的下载支持。
 # 新增功能
