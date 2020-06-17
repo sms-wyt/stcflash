@@ -40,8 +40,6 @@ PROTOSET_8 = [PROTOCOL_8]
 PROTOSET_15 = [PROTOCOL_15]
 PROTOSET_PARITY = [PROTOCOL_12C5A, PROTOCOL_12C52]
 
-global highbaud_pre
-
 class Programmer:
     def __init__(self, conn, protocol=None):
         self.conn = conn
