@@ -40,6 +40,7 @@ PROTOSET_8 = [PROTOCOL_8]
 PROTOSET_15 = [PROTOCOL_15]
 PROTOSET_PARITY = [PROTOCOL_12C5A, PROTOCOL_12C52]
 
+global highbaud_pre
 
 class Programmer:
     def __init__(self, conn, protocol=None):
@@ -604,21 +605,22 @@ class Programmer:
                          % (i // 16,
                             " ".join(["%02X" % j for j in self.info[i:i+16]])))
     def print_info(self):
-        print("系统时钟频率:%.3fMHz" % self.fosc)
+        print("系统时钟频率: %.3fMHz" % self.fosc)
         if self.protocol in PROTOSET_8:
-            print("掉电唤醒定时器频率:%.3fKHz" % self.wakeup_fosc)
+            print("掉电唤醒定时器频率: %.3fKHz" % self.wakeup_fosc)
             print("内部参考电压: %d mV" %self.internal_vol)
             print("低压检测电压: %.1f V" %self.det_low_vol) 
-            print("内部安排测试时间:20%s年%s月%s日" %(self.test_year,self.test_month,self.test_day))           
+            print("内部安排测试时间: 20%s年%s月%s日" %(self.test_year,self.test_month,self.test_day))           
 
         if self.protocol in PROTOSET_15:
-            print("掉电唤醒定时器频率:%.3fKHz" % self.wakeup_fosc)
+            print("掉电唤醒定时器频率: %.3fKHz" % self.wakeup_fosc)
             print("内部参考电压: %d mV" %self.internal_vol) 
-            print("内部安排测试时间:20%s年%s月%s日" %(self.test_year,self.test_month,self.test_day))   
+            print("内部安排测试时间: 20%s年%s月%s日" %(self.test_year,self.test_month,self.test_day))   
 
-        print("型号:%s (版本:%s) " % (self.name, self.version))
+        print("单片机型号: %s" % self.name)
+        print("固件版本号: %s" % self.version)
         if self.romsize is not None:
-            print("ROM: %dKB" % self.romsize)
+            print("程序空间: %dKB" % self.romsize)
 
         if self.protocol == PROTOCOL_89:
             switches = [( 2, 0x80, "Reset stops                                                                                                  "),
@@ -655,8 +657,8 @@ class Programmer:
         
         if self.protocol in PROTOSET_8:
             baud = 115200 #若没指定波特率，默认为115200
-            if baud0 != 2400:
-                baud = baud0
+            if highbaud_pre != 115200:
+                baud = highbaud_pre
             #支持460800以内的任意波特率
             #典型波特率：460800、230400、115200、57600、38400、28800、19200、14400、9600、4800
             if baud in range(460801): 
@@ -703,17 +705,49 @@ class Programmer:
             self.__conn_baudrate(baud)
             self.baudrate = baud
         elif self.protocol in PROTOSET_15:
-            for baud in [115200, 57600, 38400, 28800, 19200,
-                     14400, 9600, 4800, 2400, 1200]:
-                if self.fosc < 11.2 and self.fosc > 11:
-                    baudstr = [0x6E, 0x40, 0xff,0xd0,    0x80,0x6E, 0x81]
-                elif self.fosc > 18.3 and self.fosc < 18.5:
-                    baudstr = [0x6E, 0x40, 0xff,0xd0,   0x40,0x28, 0x81]
-                elif self.fosc > 5.4 and self.fosc < 5.6:
-                    baudstr = [0x6f, 0x40, 0xff,0xd0,   0xC0,0x67, 0x81]
-                else:           #elif self.fosc < 22.5 and self.fosc > 22:     默认为22.1184MHz
-                    baudstr = [0x6E, 0x40, 0xff,0xd0,   0x40,0x6f, 0x81]
+            baud = 115200 #若没指定波特率，默认为115200
+            if highbaud_pre != 115200:
+                baud = highbaud_pre
+            #支持460800以内的任意波特率
+            #典型波特率：460800、230400、115200、57600、38400、28800、19200、14400、9600、4800
+            if baud in range(460801): 
+                #定时器1重载值计算微调，可能由于目标芯片的差异性需要微调
+                if baud in [300000,350000]:
+                    Timer1_value = int(65536.2 - float(22.1184 * 1000000 / 4 / baud))  
+                else: 
+                    Timer1_value = int(65536.5 - float(22.1184 * 1000000 / 4 / baud))  
 
+                if self.fosc < 24.5 and self.fosc > 23.5:    #24M
+                    foc_value_1 = 0x40
+                    foc_value_2 = 0x9F
+                elif self.fosc < 27.5 and self.fosc > 26.5:  #27M
+                    foc_value_1 = 0x40
+                    foc_value_2 = 0xDC
+                elif self.fosc < 22.7 and self.fosc > 21.7:  #22.1184M
+                    foc_value_1 = 0x40
+                    foc_value_2 = 0x79
+                elif self.fosc < 20.5 and self.fosc > 19.5:  #20M
+                    foc_value_1 = 0x40
+                    foc_value_2 = 0x4F
+                elif self.fosc < 12.3 and self.fosc > 11.7:  #12M
+                    foc_value_1 = 0x80
+                    foc_value_2 = 0xA2
+                elif self.fosc < 11.4 and self.fosc > 10.8:  #11.0592M
+                    foc_value_1 = 0x80
+                    foc_value_2 = 0x7D
+                elif self.fosc < 18.8 and self.fosc > 18.0:  #18.432M
+                    foc_value_1 = 0x40
+                    foc_value_2 = 0x31
+                elif self.fosc < 6.3 and self.fosc > 5.7:#6M
+                    foc_value_1 = 0xC0
+                    foc_value_2 = 0x9f
+                elif self.fosc < 5.9 and self.fosc > 5.0:  #5.5296M
+                    foc_value_1 = 0xC0
+                    foc_value_2 = 0x7B
+                              
+                baudstr = [0x6d, 0x40, Timer1_value >> 8, Timer1_value & 0xff, foc_value_1,foc_value_2, 0x81]
+                #baudstr = [0x6b, 0x40, 0xff,0xf4,   0x40,0x92, 0x81]
+                
                 self.send(0x01, baudstr )
                 try:
                     cmd, dat = self.recv()                   
@@ -803,19 +837,23 @@ class Programmer:
             cmd, dat = self.recv(10)
             self.send(0x03, [0x00, 0x00, 0x5A, 0xA5])
             cmd, dat = self.recv(10)
-            if self.protocol not in PROTOSET_15:
-                for i in range(7):
-                    dat[i] = str(hex(dat[i]))
-                    dat[i] = dat[i].replace("0x",'')
-                serial_number = ""
-                for i in dat:
-                    serial_number = serial_number +str(i)
-                self.serial_number = str(serial_number)
-                print("\r")
-                sys.stdout.write("出厂序列号:")
-                sys.stdout.write(self.serial_number.upper())
-                sys.stdout.flush()
-                print("\r")
+            for i in range(7):
+                dat[i] = hex(dat[i])
+                dat[i] = str(dat[i])
+                dat[i] = dat[i].replace("0x",'')
+                if len(dat[i]) == 1:
+                    dat_value = list(dat[i])
+                    dat_value.insert(0, '0')
+                    dat[i] = ''.join(dat_value) 
+            serial_number = ""
+            for i in dat:
+                serial_number = serial_number +str(i)
+            self.serial_number = str(serial_number)
+            print("\r")
+            sys.stdout.write("芯片出厂序列号: ")
+            sys.stdout.write(self.serial_number.upper())
+            sys.stdout.flush()
+            print("\r")
 
         else:
             self.send(0x84, ([0x00, 0x00, self.romsize * 4,
@@ -949,7 +987,7 @@ def program(prog, code, erase_eeprom=None):
 
     prog.unknown_packet_1() 
 
-    sys.stdout.write("波特率:")
+    sys.stdout.write("切换至最高波特率: ")
     sys.stdout.flush()
 
     prog.handshake() 
@@ -967,11 +1005,11 @@ def program(prog, code, erase_eeprom=None):
 
     print("擦除完成")
 
-    print("固件大小:%d bytes" % len(code)) 
+    print("代码长度: %d bytes" % len(code)) 
 
 
     # print("Programming: ", end="", flush=True)
-    sys.stdout.write("开始烧录...")  
+    sys.stdout.write("正在下载用户代码...")  
     sys.stdout.flush()  
 
     oldbar = 0
@@ -995,8 +1033,7 @@ def program(prog, code, erase_eeprom=None):
 
     prog.terminate() 
     time_end = time.time()
-    print("重启运行...")
-    print("耗时:%.3fs"% (time_end-time_start))
+    print("耗时: %.3fs"% (time_end-time_start))
 
 
 # Convert Intel HEX code to binary format
@@ -1303,6 +1340,10 @@ def main():
                         help="initial baud rate (default: 2400)",
                         type=int,
                         default=2400)
+    parser.add_argument("-hb", "--highbaud",
+                        help="initial baud rate (default: 115200)",
+                        type=int,
+                        default=115200)
     parser.add_argument("-r", "--protocol",
                         help="protocol to use for programming",
                         choices=["89", "12c5a", "12c52", "12cx052", "8", "15", "auto"],
@@ -1356,8 +1397,10 @@ def main():
     else:
         code = None
 
-    print("Connect to %s at baudrate %d bps" % (opts.port, opts.lowbaud))
-
+    print("通信端口：%s  最低波特率：%d bps" % (opts.port, opts.lowbaud))
+    
+    global highbaud_pre
+    highbaud_pre = opts.highbaud
     with serial.Serial(port=opts.port,
                        baudrate=opts.lowbaud,
                        parity=serial.PARITY_NONE) as conn:
