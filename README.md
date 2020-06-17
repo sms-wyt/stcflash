@@ -15,7 +15,8 @@ stcflash主要是基于https://github.com/laborer/stcflash 的stcflash修改而�
 1、按照默认参数<br>
   ./stcflash.py xxx.hex<br>
 2、指定最低波特率、最高波特率和通信端口<br>
-  ./stcflash.py xxx.hex --port COM3 --lowbaud 2400 --highbaud 460800
+  ./stcflash.py xxx.hex --port COM3 --lowbaud 2400 --highbaud 460800<br>
+3、其他命令可以参考https://github.com/laborer/stcflash 的README.md
   # 注意事项
   1、对于STC8系列和STC15系列，如果没有指定最低波特率和最高波特率，默认最低波特率为2400，最高波特率为115200;<br>
   2、最低波特率建议使用默认2400，可以提供不同型号单片机的握手成功率;<br>
