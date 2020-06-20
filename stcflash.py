@@ -505,10 +505,11 @@ class Programmer:
         for i in range(500): 
             try:
                 if self.protocol in [PROTOCOL_89,PROTOCOL_12C52,PROTOCOL_12Cx052,PROTOCOL_12C5A]:
-                    self.__conn_write([0x7F,0x7F])  
+                    self.__conn_write([0x7F,0x7F])
+                    cmd, dat = self.first_recv(0.03, [0x68]) 
                 else:
                     self.__conn_write([0x7F])  
-                cmd, dat = self.first_recv(0.03, [0x68]) 
+                    cmd, dat = self.first_recv(0.03, [0x68]) 
                 break
             except IOError:
                 pass
